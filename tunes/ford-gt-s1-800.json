@@ -1,0 +1,83 @@
+{
+  "schema": "fh6-tune/v1",
+  "source": "FH6 Upgrade Shop, full read-only auto-capture via forza_capture.py walk (deterministic 4x3 sweep) + Windows OCR, 2026-06-18",
+  "car": {
+    "name": "2005 Ford GT",
+    "performance_index": 800,
+    "class": "S1",
+    "drivetrain": "RWD"
+  },
+  "build": {
+    "aspiration": "factory positive-displacement supercharger (retained; not swapped)",
+    "engine": {
+      "intake": "Stock",
+      "fuel_system": "Stock",
+      "ignition": "Stock",
+      "exhaust": "Race",
+      "camshaft": "Sport",
+      "valves": "Sport",
+      "displacement": "Stock (Stock Engine Block)",
+      "pistons_compression": "Race",
+      "supercharger_aspiration": "Stock (factory positive-displacement supercharger)",
+      "intercooler": "Race",
+      "oil_cooling": "Stock",
+      "flywheel": "Race"
+    },
+    "platform": {
+      "brakes": "Race",
+      "springs_dampers": "Race",
+      "front_arb": "Race",
+      "rear_arb": "Race",
+      "chassis_rollcage": "Race",
+      "weight_reduction": "Race"
+    },
+    "drivetrain": {
+      "layout": "RWD (stock, no AWD swap)",
+      "clutch": "Race",
+      "transmission": "Sport or Race (final-drive ratio tuning unlocked; gear-ratio control unconfirmed)",
+      "driveline": "Race",
+      "differential": "Race Diff (accel/decel lock tunable)"
+    },
+    "conversions": {
+      "engine_swap": "Stock Powertrain (no swap)",
+      "drivetrain_swap": "Stock Drivetrain (RWD retained)",
+      "aspiration_swap": "Stock (factory supercharger retained)"
+    },
+    "aero": {
+      "front_bumper": "Adjustable front aero installed — front downforce tuning UNLOCKED",
+      "rear_wing": "Adjustable rear wing installed — rear downforce tuning UNLOCKED",
+      "pi_note": "installing front + rear aero left PI at 800 (net-zero PI cost on this car — free downforce)",
+      "downforce_slider_lbs": { "front": { "min": 163, "max": 330 }, "rear": { "min": 322, "max": 696 } },
+      "downforce_recommended_goliath_lbs": { "front": 300, "rear": 580 }
+    },
+    "tires": {
+      "compound": "Race Slick (installed)",
+      "front_width_mm": 255,
+      "front_width_note": "255mm is the WIDEST front available for this car (maxed — no further front-grip gain there)",
+      "rear_width_mm": 335,
+      "front_rim_in": 18,
+      "rear_rim_in": 19,
+      "rim_style": "Stock",
+      "front_track_width": "Upgraded",
+      "rear_track_width": "Upgraded"
+    }
+  },
+  "tune": {
+    "as_of": "2026-06-20 (user-set; alignment/aero/diff read on-screen, rear ARB user-reported)",
+    "alignment": { "camber_deg": { "front": -2.3, "rear": -1.6 }, "toe_deg": { "front": 0.4, "rear": -0.2 }, "caster_deg": 6.0 },
+    "antiroll_bars": { "front": "unread", "rear": 18 },
+    "aero_downforce_lb": { "front": 310, "rear": 550 },
+    "differential_lock_pct": { "accel": 45, "decel": 20 },
+    "change_log_vs_prior": "front toe +0.3->+0.4 (more turn-in), rear toe ->-0.2 (plant rear), rear ARB ->18 (soft, more rear grip); front DF 310 & diff accel 45 unchanged",
+    "intent": "sharpen front turn-in (fix apex understeer) + plant rear (fix exit wheelspin) from goliath10"
+  },
+  "verification": {
+    "method": "deterministic 4-row x 3-col grid sweep per category (scroll-aware), de-duplicated from OCR",
+    "categories_scanned": ["Engine (12 parts)", "Platform and Handling (6)", "Drivetrain (4)", "Body Kits and Conversions (3)", "Aero and Appearance (2)", "Tires and Rims (8)"],
+    "parts_old_3x3_scan_would_have_missed": ["Engine: Intercooler (Race)", "Engine: Oil/Cooling (Stock)", "Engine: Flywheel (Race)", "Tires: Rear Track Width (Upgraded)"]
+  },
+  "unknowns": {
+    "transmission_tier": "Sport vs Race not legible from OCR; final-drive tuning is unlocked (so >= Sport). Race would additionally unlock individual gear-ratio tuning.",
+    "power_hp": "not captured in this walk (read from the build summary screen)"
+  }
+}

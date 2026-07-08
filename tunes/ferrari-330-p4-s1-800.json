@@ -1,0 +1,74 @@
+{
+  "schema": "fh6-tune/v1",
+  "source": "FH6 Upgrade Shop walk + Tune screen capture (forza_capture.py) + vision read, 2026-06-18",
+  "car": {
+    "name": "1967 Ferrari #24 Ferrari Spa 330 P4",
+    "car_ordinal": 2793,
+    "performance_index": 800,
+    "class": "S1",
+    "drivetrain": "RWD (mid-engine V12, naturally aspirated)",
+    "note": "downloaded community tune (share tags neutraltilt / tcallaway81)"
+  },
+  "build": {
+    "engine": {
+      "intake_manifold_throttle_body": "Upgraded (installed, non-stock)",
+      "fuel_system": "Stock",
+      "ignition": "Race",
+      "camshaft": "Race",
+      "valves": "Race",
+      "displacement": "Stock (Stock Engine Block)",
+      "pistons_compression": "Race",
+      "flywheel": "Race",
+      "aspiration": "naturally aspirated (no forced induction; max boost 0)"
+    },
+    "platform": {
+      "brakes": "Sport (NOT Race -> brake balance/pressure tuning LOCKED)",
+      "springs_dampers": "Stock (sliders still adjustable in FH6)",
+      "chassis_rollcage": "Stock",
+      "weight_reduction": "Race",
+      "anti_roll_bars": "adjustable in tune (no separate ARB part listed)"
+    },
+    "drivetrain": {
+      "layout": "RWD (stock, no swap)",
+      "clutch": "Stock",
+      "transmission": "Sport (final-drive tuning only; individual gear ratios LOCKED)",
+      "driveline": "Stock",
+      "differential": "Stock OPEN diff (accel/decel lock tuning LOCKED)"
+    },
+    "aero": {
+      "front_bumper": "Race (adjustable front downforce)",
+      "rear_wing": "Race (adjustable rear downforce)"
+    },
+    "tires": {
+      "compound": "Race Slick",
+      "front_width_mm": 275,
+      "rear_width_mm": 375,
+      "front_rim_in": 16,
+      "rear_rim_in": 17,
+      "rim_style": "Stock"
+    }
+  },
+  "tune": {
+    "tires_pressure_psi": { "front": 30.0, "rear": 33.0 },
+    "gearing": { "final_drive": 3.31, "individual_ratios": "LOCKED (Sport transmission)" },
+    "alignment": {
+      "camber_deg": { "front": 0.0, "rear": 0.0 },
+      "toe_deg": { "front": 0.0, "rear": 0.0 },
+      "caster_deg": 3.0
+    },
+    "antiroll_bars": { "front": 7.60, "rear": 7.80 },
+    "springs_lb_in": { "front": 220.6, "rear": 366.9 },
+    "ride_height_in": { "front": 5.2, "rear": 4.6 },
+    "damping_rebound": { "front": 3.4, "rear": 5.4 },
+    "damping_bump": { "front": 2.3, "rear": 3.6 },
+    "aero_downforce_lb": { "front": 102, "rear": 238, "balance_front_pct": 30 },
+    "brakes": "LOCKED (needs Race brakes)",
+    "differential_lock_pct": "LOCKED (needs Race/Sport differential)"
+  },
+  "performance_readout": { "mech_balance": 0.61, "aero_balance": 0.30, "aero_efficiency": 0.820, "top_speed_mph": 185.3 },
+  "locked_until_built": [
+    "differential accel/decel lock -> install Race or Sport differential",
+    "brake balance/pressure -> install Race brakes",
+    "individual gear ratios -> install Race transmission"
+  ]
+}

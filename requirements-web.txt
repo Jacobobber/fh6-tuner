@@ -1,0 +1,7 @@
+# Cloud multi-tenant web app (python main.py web). Not needed for the local
+# tool (gui/listen/record/analyze/compare/mcp).
+fastapi
+uvicorn[standard]
+authlib
+itsdangerous
+httpx

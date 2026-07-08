@@ -1,0 +1,4 @@
+rich
+click
+numpy
+mcp

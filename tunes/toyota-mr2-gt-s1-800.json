@@ -1,0 +1,59 @@
+{
+  "schema": "fh6-tune/v1",
+  "source": "FH6 Upgrade Shop walk + Tune screen capture (forza_capture.py) + vision read, 2026-06-20",
+  "car": {
+    "name": "1995 Toyota MR2 GT",
+    "performance_index": 800,
+    "class": "S1",
+    "drivetrain": "RWD (mid-engine)",
+    "note": "ENGINE-SWAPPED to a Racing V6 (NA); original turbo I4 removed. Light mid-engine."
+  },
+  "build": {
+    "engine": {
+      "intake": "Race", "intake_manifold_throttle_body": "Race", "fuel_system": "Race",
+      "ignition": "Race", "camshaft": "Race", "valves": "Race",
+      "swap": "Racing V6 (engine swap installed)",
+      "aspiration": "naturally aspirated (turbo removed by the V6 swap)"
+    },
+    "platform": {
+      "brakes": "Sport (NOT Race -> brake balance/pressure tuning LOCKED)",
+      "springs_dampers": "Race",
+      "front_arb": "Race", "rear_arb": "Race",
+      "chassis_rollcage": "Sport",
+      "weight_reduction": "Race"
+    },
+    "drivetrain": {
+      "layout": "RWD mid-engine (stock, no swap)",
+      "clutch": "Race",
+      "transmission": "Sport (final-drive tuning only; individual gear ratios LOCKED)",
+      "driveline": "Race",
+      "differential": "Race Diff (accel/decel lock TUNABLE)"
+    },
+    "conversions": { "engine_swap": "Racing V6", "drivetrain_swap": "Stock (RWD)", "aspiration": "Stock NA (post-swap)" },
+    "aero": { "front_bumper": "Race (adjustable)", "rear_wing": "Race (adjustable)", "rear_bumper": "Bomex (cosmetic)" },
+    "tires": {
+      "compound": "Race Slick",
+      "front_width_mm": 235, "rear_width_mm": 285,
+      "front_rim_in": 17, "rear_rim_in": 18, "rim_style": "Stock",
+      "front_track_width": "Upgraded", "rear_track_width": "Upgraded"
+    }
+  },
+  "tune": {
+    "tires_pressure_psi": { "front": 31.0, "rear": 33.0 },
+    "gearing": { "final_drive": 4.29, "individual_ratios": "LOCKED (Sport transmission)" },
+    "alignment": { "camber_deg": { "front": -2.0, "rear": -1.5 }, "toe_deg": { "front": 0.0, "rear": 0.0 }, "caster_deg": 5.0 },
+    "antiroll_bars": { "front": 32.90, "rear": 32.0, "note": "rear softened to 32 by hand before the goliathMR2 lap (capture had shown 36.1); ARB now ~neutral yet car still oversteers -> cause is power/diff, not ARB" },
+    "springs_lb_in": { "front": 449.0, "rear": 697.0 },
+    "ride_height_in": { "front": 3.8, "rear": 3.6 },
+    "damping_rebound": { "front": 9.6, "rear": 14.0 },
+    "damping_bump": { "front": 6.0, "rear": 8.7 },
+    "aero_downforce_lb": { "front": 128, "rear": 291 },
+    "brakes": "LOCKED (needs Race brakes)",
+    "differential_lock_pct": { "accel": 23, "decel": 30 }
+  },
+  "performance_readout": { "mech_balance": 0.59, "aero_balance": 0.32, "aero_efficiency": 0.846, "top_speed_mph": 207.5 },
+  "locked_until_built": [
+    "brake balance/pressure -> install Race brakes",
+    "individual gear ratios -> install Race transmission"
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "schema": "fh6-tune/v1",
+  "source": "FH6 in-game Tune screens — screenshots 2026-06-17 ~20:10, read via vision",
+  "car": {
+    "name": "1966 Ford #2 GT40 Mk II",
+    "performance_index": 800,
+    "class": "S1",
+    "drivetrain": "RWD",
+    "mech_balance": 0.62
+  },
+  "build": {
+    "power_hp": 649,
+    "torque_ftlb": 587,
+    "aspiration": "naturally aspirated (no forced induction)",
+    "engine": {
+      "carburetor": "Race", "ignition": "Race", "cams": "Race",
+      "displacement": "Race (Race Engine Block)", "pistons_compression": "Race",
+      "flywheel": "Stock", "valves": "Stock"
+    },
+    "platform": {
+      "brakes": "Race", "springs_dampers": "Race", "front_arb": "Race",
+      "rear_arb": "Race", "weight_reduction": "Race", "roll_cage": "Stock"
+    },
+    "drivetrain": {
+      "layout": "RWD (stock, no AWD swap)", "clutch": "Stock",
+      "transmission": "Sport", "driveline": "Stock",
+      "differential": "Stock open diff (accel/decel tuning locked)"
+    },
+    "tires": {
+      "compound": "Semi-Slick (Race Slick owned but not installed)",
+      "front_width_mm": 275, "rear_width_mm": 375, "rims": "stock"
+    },
+    "aero": { "front_bumper": "Stock (no front downforce; race bumper available)" },
+    "pi_factors_approx": { "speed": 8.1, "handling": "~8", "acceleration": "~8", "launch": "~6", "braking": "~6", "offroad": "~4" },
+    "limiting_factor": "traction-limited — 649 hp RWD on a stock OPEN diff + semi-slicks, Launch factor ~6",
+    "source": "in-game Upgrade Shop, full read-only capture via forza_capture.py 2026-06-17"
+  },
+  "tune": {
+    "tires_pressure_psi": { "front": 31.0, "rear": 34.5 },
+    "gearing": { "final_drive": 2.86, "individual_ratios": null },
+    "alignment": {
+      "camber_deg": { "front": -2.0, "rear": -1.5 },
+      "toe_deg": { "front": 0.2, "rear": -0.2 },
+      "caster_deg": 6.0
+    },
+    "antiroll_bars": { "front": 16.60, "rear": 18.00 },
+    "springs_lb_in": { "front": 423.7, "rear": 765.5 },
+    "ride_height_in": { "front": 3.3, "rear": 3.3 },
+    "damping_rebound": { "front": 8.7, "rear": 14.9 },
+    "damping_bump": { "front": 5.4, "rear": 9.3 },
+    "aero_downforce": { "front": null, "rear": null },
+    "brakes": { "balance_front_pct": 50, "pressure_pct": 100 },
+    "differential_lock_pct": { "accel": null, "decel": null }
+  },
+  "unknowns": {
+    "gearing.individual_ratios": "sliders present but values not legible in the screenshot",
+    "aero_downforce.front": "locked — race front bumper not installed",
+    "aero_downforce.rear": "adjustable, but value not legible in the screenshot",
+    "differential_lock_pct": "locked — no race/sport differential installed"
+  }
+}

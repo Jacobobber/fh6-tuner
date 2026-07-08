@@ -1,0 +1,75 @@
+{
+  "schema": "fh6-tune/v1",
+  "source": "FH6 Upgrade Shop walk + Tune screen capture (forza_capture.py) + vision read, 2026-06-20",
+  "car": {
+    "name": "2012 Porsche 911 GT3 RS 4.0",
+    "performance_index": 800,
+    "class": "S1",
+    "drivetrain": "RWD (rear-engine, naturally aspirated flat-6)"
+  },
+  "build": {
+    "engine": {
+      "intake": "Stock",
+      "intake_manifold_throttle_body": "Stock",
+      "fuel_system": "Stock",
+      "ignition": "Stock",
+      "exhaust": "Race",
+      "camshaft": "Race",
+      "valves": "Stock",
+      "flywheel": "Race",
+      "aspiration": "naturally aspirated (no forced induction)",
+      "note": "light engine build (exhaust/cams/flywheel only) - grip-first, low power add"
+    },
+    "platform": {
+      "springs_dampers": "Stock (tune sliders still adjustable in FH6)",
+      "chassis_rollcage": "Stock",
+      "weight_reduction": "Race",
+      "brakes": "no brake part listed; brake balance/pressure tuning IS unlocked",
+      "anti_roll_bars": "adjustable in tune"
+    },
+    "drivetrain": {
+      "layout": "RWD (stock, no swap)",
+      "clutch": "Race",
+      "transmission": "Sport (final-drive tuning only; individual gear ratios LOCKED)",
+      "driveline": "Race",
+      "differential": "Race (installed AFTER the capture; was stock/locked at capture time; accel/decel tunable)"
+    },
+    "conversions": { "engine_swap": "Stock", "drivetrain_swap": "Stock (RWD)", "aspiration": "Stock (NA)" },
+    "aero": {
+      "front_bumper": "Race (adjustable front downforce)",
+      "rear_wing": "Race (adjustable rear downforce)"
+    },
+    "tires": {
+      "compound": "Race Slick",
+      "front_width_mm": 335,
+      "rear_width_mm": 365,
+      "front_rim_in": 19,
+      "rear_rim_in": 19,
+      "rim_style": "Stock",
+      "front_track_width": "Upgraded",
+      "rear_track_width": "Upgraded",
+      "note": "huge near-square footprint (335 front is very wide) -> strong front grip"
+    }
+  },
+  "tune": {
+    "tires_pressure_psi": { "front": 32.0, "rear": 34.0 },
+    "gearing": { "final_drive": 3.89, "individual_ratios": "LOCKED (Sport transmission)" },
+    "alignment": {
+      "camber_deg": { "front": -3.0, "rear": -2.0 },
+      "toe_deg": { "front": 0.0, "rear": 0.0 },
+      "caster_deg": 6.5
+    },
+    "antiroll_bars": { "front": 29.30, "rear": 20.90 },
+    "springs_lb_in": { "front": 428.4, "rear": 712.6 },
+    "ride_height_in": { "front": 4.4, "rear": 4.0 },
+    "damping_rebound": { "front": 7.0, "rear": 11.0 },
+    "damping_bump": { "front": 4.6, "rear": 7.3 },
+    "aero_downforce_lb": { "front": 215, "rear": 508 },
+    "brakes": { "balance_front_pct": 50, "pressure_pct": 100 },
+    "differential_lock_pct": { "accel": 28, "decel": 43, "note": "race diff installed after capture; lap goliath911 driven with these values" }
+  },
+  "performance_readout": { "mech_balance": 0.58, "aero_balance": 0.20, "aero_efficiency": 0.808, "top_speed_mph": 193.0 },
+  "locked_until_built": [
+    "individual gear ratios -> install Race transmission"
+  ]
+}

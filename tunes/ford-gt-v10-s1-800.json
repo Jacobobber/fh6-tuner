@@ -1,0 +1,147 @@
+{
+  "schema": "fh6-tune/v1",
+  "source": "FH6 Upgrade Shop walk + Tune screen capture (forza_capture.py) + Windows OCR (ocr_captures.py) + telemetry (sessions GTGolitah3-5), 2026-06-26 | tune sliders reconciled to fh6-claude live forza_capture 14:48",
+  "car": {
+    "name": "2005 Ford GT (8.4L V10 engine swap)",
+    "car_ordinal": 348,
+    "performance_index": 800,
+    "class": "S1",
+    "drivetrain": "RWD (mid-engine, engine-swapped to supercharged 8.4L V10)",
+    "note": "Confirmed V10 via telemetry cylinder count (cyl=10). Stock car is a 5.4L supercharged V8."
+  },
+  "build": {
+    "engine": {
+      "engine_swap": "8.4L V10 (installed; was stock 5.4L V8)",
+      "aspiration": "Sport Centrifugal Supercharger (max boost ~10-12 psi)",
+      "intake": "Stock",
+      "exhaust": "Stock",
+      "camshaft_valves": "Stock",
+      "fuel_ignition_displacement_intercooler_oil_flywheel": "marked installed in OCR, individual tiers not cleanly read (likely mostly stock; PI spent on the swap, not internals)"
+    },
+    "platform": {
+      "brakes": "Race (brake balance + pressure tuning unlocked)",
+      "springs_dampers": "Race (unlocks spring/damper/alignment tuning)",
+      "chassis_rollcage": "Reinforcement / Roll Cage installed",
+      "weight_reduction": "not confirmed from OCR",
+      "anti_roll_bars": "Race front + rear (adjustable)"
+    },
+    "drivetrain": {
+      "layout": "RWD (Stock Drivetrain, no swap)",
+      "clutch": "installed (tier not confirmed)",
+      "transmission": "Stock (final-drive tuning only; individual gear ratios LOCKED)",
+      "driveline": "installed (tier not confirmed)",
+      "differential": "Race Diff (full accel/decel lock tuning unlocked)"
+    },
+    "aero": {
+      "front_bumper": "Race (adjustable front downforce)",
+      "rear_wing": "Race adjustable rear wing (adjustable rear downforce)"
+    },
+    "tires": {
+      "compound": "Race Slick",
+      "front_width_mm": 255,
+      "rear_width_mm": 335,
+      "front_tire_spec": "255/40R18",
+      "rear_tire_spec": "335/40R19",
+      "front_rim_in": 18,
+      "rear_rim_in": 19,
+      "rim_style": "Stock",
+      "note": "Front width is MAXED - no wider front tire option available for this car."
+    }
+  },
+  "powertrain": {
+    "max_power_hp": 823,
+    "peak_power_rpm": 6344,
+    "max_torque_lb_ft": 747,
+    "max_torque_nm": 1013,
+    "in_game_rated_torque_lb_ft": 723,
+    "peak_torque_rpm": 5441,
+    "redline_rpm": 8000,
+    "weight_lb": 2716,
+    "front_weight_pct": 47,
+    "power_to_weight_hp_per_lb": 0.3,
+    "shift_point_note": "Shift near 8000 (just before limiter), not at peak power; powerband is 5441-8000 rpm."
+  },
+  "tune": {
+    "tires_pressure_psi": {
+      "front": 30.0,
+      "rear": 30.0
+    },
+    "gearing": {
+      "final_drive": 4.2,
+      "individual_ratios": "LOCKED (Stock transmission)"
+    },
+    "alignment": {
+      "camber_deg": {
+        "front": -2.2,
+        "rear": -1.6
+      },
+      "toe_deg": {
+        "front": 0.1,
+        "rear": 0.1,
+        "direction": "front toe-OUT, rear toe-IN"
+      },
+      "caster_deg": 7.0
+    },
+    "antiroll_bars": {
+      "front": 28,
+      "rear": 18
+    },
+    "springs_lb_in": {
+      "front": 551.5,
+      "rear": 509.7
+    },
+    "ride_height_in": {
+      "front": 4.5,
+      "rear": 4.5
+    },
+    "damping_rebound": {
+      "front": 9.0,
+      "rear": 11.0
+    },
+    "damping_bump": {
+      "front": 6.0,
+      "rear": 7.0
+    },
+    "aero_downforce_lb": {
+      "front": 320,
+      "rear": 530
+    },
+    "brakes": {
+      "balance_front_pct": 47,
+      "pressure_pct": 90
+    },
+    "differential_lock_pct": {
+      "accel": 45,
+      "decel": 24
+    }
+  },
+  "performance_readout": {
+    "mech_balance": 0.57,
+    "aero_balance": 0.35,
+    "aero_efficiency": 0.807,
+    "predicted_top_speed_mph": 198.3,
+    "telemetry_top_speed_mph": 203.4,
+    "note": "Tune-screen panel read at camber -1.8 state; telemetry top speed from GTGolitah3/5 full laps."
+  },
+  "telemetry_baseline": {
+    "best_lap_session": "GTGolitah5 (user-reported fastest in-game lap)",
+    "limiting_factor": "front grip (understeer)",
+    "apex_balance": 0.547,
+    "apex_front_combined_slip": 1.046,
+    "brake_lockup_pct": 0.236,
+    "yaw_lag_ms": 192,
+    "peak_lat_g": 3.36,
+    "note": "Front axle grip-saturated at apex (combined slip >= 1.0). Front ARB change (34->28) was a null result; front camber optimum is ~-1.8 (-2.2 and -2.3 both worse on balance). Slow-corner understeer is build-limited (front width maxed, heavy rear-biased V10), but did NOT prevent the best lap - Goliath time lives in fast corners."
+  },
+  "pending_recommendations": [
+    "Caster 6.0 -> 6.5: adds cornering front grip via dynamic camber without the braking-lockup penalty of static camber (the right lever now that camber/width are maxed).",
+    "Camber -2.2 -> -2.0 and front downforce 330 -> 320: consistency fixes, recover braking stability and calm the new 92 mph high-speed oversteer snap; keep if lap time holds.",
+    "Hold V10 vs revert to V8: V10 = +11 mph top speed but more understeer + lazier turn-in; V8 = lighter, more front-balanced. Decide on timed laps."
+  ],
+  "data_caveats": [
+    "FH6 tire temperature is NOT a verified grip signal (project memory refutes temp-zone=peak-grip); tune by grip/slip, not temp.",
+    "Goliath gives no clean lap splits in telemetry (laps_seen [0,0]); judge pace by in-game lap time, balance by phase-conditioned numbers.",
+    "Some build part tiers (engine internals, clutch, driveline) were marked installed but not cleanly OCR-read.",
+    "Tune values reconciled to fh6-claude live capture (14:48): springs were reset by the engine swap (was 561/824 V8-era assumption, now 551.5/509.7 front-stiffer-than-rear); caster now 7.0 (ABOVE verified 5.5-6.5 band); front DF pulled to 320 per rec, rear DF 530; final drive reads 4.20 here vs an earlier 4.80 OCR - unconfirmed which. Gearing verdict (power/drag-limited) is telemetry-based, unaffected."
+  ]
+}

@@ -1,0 +1,34 @@
+# --- Personal / private (never commit) ---
+# personal Claude Code config, skills, agent memory
+.claude/
+# game screenshots + OCR text (contain gamertag)
+captures/
+# local analysis dumps / build artifacts
+dist/
+# real secrets
+.env
+
+# recorded telemetry sessions (large / personal) — keep the dir, ignore contents
+sessions/*
+!sessions/.gitkeep
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
