@@ -106,6 +106,43 @@ def analyze(session_dir: Path):
 
 
 @cli.command()
+@click.argument("session")
+@click.option("--weight", type=float, default=None, help="Car weight (lb) for ride-frequency / roll-stiffness math")
+@click.option("--front-pct", type=float, default=None, help="Front weight fraction, e.g. 0.47")
+def read(session: str, weight: float | None, front_pct: float | None) -> None:
+    """Full read: surface EVERY analysis signal for a session — balance by phase +
+    speed/load/temp band, per-corner dampers, response, grip, driver, drivetrain,
+    chassis — and save it to dist/read_SESSION.md."""
+    from tuner.readout import read_session
+
+    report = read_session(session, weight_lb=weight, front_weight_pct=front_pct)
+    console.print(report)
+    dist = Path("dist")
+    dist.mkdir(exist_ok=True)
+    (dist / f"read_{session}.md").write_text(report, encoding="utf-8")
+    console.print(f"[green]saved dist/read_{session}.md[/green]")
+
+
+@cli.command("setup")
+@click.argument("config_json", type=click.Path(exists=True, path_type=Path))
+def setup_cmd(config_json: Path) -> None:
+    """Setup read: analyze a build/tune/weight config JSON (ride frequency,
+    roll-stiffness vs weight, camber/caster/diff band checks) and save to dist/."""
+    import json
+
+    from tuner.setup import setup_read
+
+    cfg = json.loads(config_json.read_text(encoding="utf-8"))
+    report = setup_read(cfg)
+    console.print(report)
+    dist = Path("dist")
+    dist.mkdir(exist_ok=True)
+    name = str(cfg.get("car", {}).get("name", config_json.stem)).replace(" ", "_")
+    (dist / f"setup_{name}.md").write_text(report, encoding="utf-8")
+    console.print(f"[green]saved dist/setup_{name}.md[/green]")
+
+
+@cli.command()
 @click.option("--port", default=5300, help="UDP port (default: 5300)")
 @click.option("--host", default="0.0.0.0", help="Bind host (default: 0.0.0.0)")
 @click.option("--web-port", default=8000, help="Web GUI port (default: 8000)")

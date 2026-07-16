@@ -22,14 +22,44 @@ from telemetry.parser import tire_temp_to_celsius
 
 G = 9.81  # m/s^2
 
-# Phase thresholds — sim-community heuristics, calibrate per car/track.
-CORNER_LAT_G = 0.30   # |lateral g| above this = cornering
-MOVING_MPS = 3.0      # below this = stationary/pit, excluded
-BRAKE_ON = 0.05       # brake pedal fraction marking braking
-THROTTLE_ON = 0.20    # throttle fraction marking corner exit
-COAST_PEDAL = 0.05    # both pedals below this = coasting
-SLIDE = 1.0           # normalized combined slip at/above this = losing grip
-MIN_PHASE_FRAMES = 50  # below this a phase bucket is too small to report
+# Definitional constants (NOT tuning cutoffs, so NOT data-derived):
+#   SLIDE=1.0 is the MEANING of the normalized combined-slip channel — |v|>=1 is
+#   grip loss by the FH6 spec, not a threshold to calibrate.
+#   MIN_PHASE_FRAMES is a data-sufficiency floor (need N samples for a stable mean).
+# The frame-state classifiers (moving / cornering / on-throttle / braking / coasting)
+# are NOT constants — they are derived per session from the data by _otsu (below).
+SLIDE = 1.0
+MIN_PHASE_FRAMES = 50
+
+
+def _otsu(x: np.ndarray) -> float:
+    """Data-derived threshold separating a signal's two modes — Otsu's method: the
+    cut that maximizes between-class variance of a 256-bin histogram.
+
+    Replaces hardcoded state cutoffs (cornering g, on-throttle %, braking %): a
+    steering/throttle/lateral-g trace is bimodal (off-cluster near zero, on-cluster
+    high), and this finds the valley between them from THIS session's own data, so
+    the split adapts to the car, controller, and track instead of a fixed guess.
+    """
+    x = x[np.isfinite(x)]
+    if x.size == 0:
+        return 0.0
+    lo, hi = float(x.min()), float(x.max())
+    if hi <= lo:
+        return lo
+    hist, edges = np.histogram(x, bins=256, range=(lo, hi))
+    hist = hist.astype(float)
+    centers = (edges[:-1] + edges[1:]) / 2.0
+    w = np.cumsum(hist)                 # cumulative weight below each edge
+    cw = np.cumsum(hist * centers)      # cumulative weighted mean numerator
+    total, total_cw = w[-1], cw[-1]
+    wf = total - w                      # weight above
+    with np.errstate(invalid="ignore", divide="ignore"):
+        mb = cw / w                     # mean of the below class
+        mf = (total_cw - cw) / wf       # mean of the above class
+        var_between = w * wf * (mb - mf) ** 2
+    var_between[~np.isfinite(var_between)] = -1.0
+    return float(centers[int(np.argmax(var_between))])
 
 
 def _col(frames: list[dict], key: str) -> np.ndarray:
@@ -108,27 +138,32 @@ def _gearing_stats(
     return out
 
 
-def _damper_histogram(front_nt: np.ndarray, rear_nt: np.ndarray, moving: np.ndarray, rate: float) -> dict:
-    """Damper-velocity symmetry from differentiated normalized suspension travel.
+def _damper_histogram(travel_m: dict[str, np.ndarray], moving: np.ndarray, rate: float) -> dict:
+    """Per-corner damper shaft-velocity from SuspensionTravelMeters (real mm/s).
 
-    Real damper tuning reads a velocity histogram; FH6 exposes only normalized
-    travel, so this is a SHAPE/symmetry diagnostic (NOT calibrated mm/s):
-    comp/rebound balance ~0.5 = healthy; high velocity_rms = soft/lots of movement,
-    low = stiff/over-damped (the "heavy/sluggish" end). Skew between comp and reb
-    speed flags soft-bump vs packing-down rebound.
+    Differentiates the ABSOLUTE (meters) travel to calibrated mm/s — the normalized
+    0-1 channel can't give velocity. The diagnostic is per-CORNER compression/rebound
+    SYMMETRY through the band the chassis actually works in, taken as the session's
+    OWN inter-quartile |velocity| range (data-derived, not a fixed mm/s cutoff), plus
+    the velocity distribution (percentiles). ~0.5 = even; per-corner asymmetry flags a
+    bump/rebound imbalance on that corner; a high p90 vs p50 = spiky/curb-heavy input.
     """
-    out: dict = {"note": "from normalized travel, not mm/s — read symmetry (~0.5) + spread, not absolute units"}
-    for name, nt in (("front", front_nt), ("rear", rear_nt)):
-        v = (np.diff(nt) * rate)[moving[:-1]]
-        if v.size < 50:
-            out[name] = None
+    out: dict = {"note": "mm/s from the meters channel; comp/reb ~0.5 = even through the car's own IQR velocity band; per-corner asymmetry is the signal"}
+    mv = moving[:-1]
+    for w, tm in travel_m.items():
+        v = (np.diff(tm) * rate * 1000.0)[mv]  # m/frame -> mm/s
+        if v.size < MIN_PHASE_FRAMES:
+            out[w] = None
             continue
-        comp, reb = v[v > 0], -v[v < 0]
-        out[name] = {
-            "comp_reb_balance": round(float(comp.size / max(comp.size + reb.size, 1)), 3),
-            "mean_comp_speed": round(float(comp.mean()), 3) if comp.size else 0.0,
-            "mean_reb_speed": round(float(reb.mean()), 3) if reb.size else 0.0,
-            "velocity_rms": round(float(np.sqrt(np.mean(v ** 2))), 3),
+        av = np.abs(v)
+        p25, p50, p90 = (float(x) for x in np.percentile(av, (25, 50, 90)))
+        band = (av >= p25) & (av <= np.percentile(av, 75))  # the car's own typical-motion range
+        comp = int(np.count_nonzero((v > 0) & band))
+        reb = int(np.count_nonzero((v < 0) & band))
+        out[w] = {
+            "comp_reb_balance_iqr": round(comp / max(comp + reb, 1), 3),
+            "abs_mm_s_p50": round(p50, 1),
+            "abs_mm_s_p90": round(p90, 1),
         }
     return out
 
@@ -160,13 +195,15 @@ def _response_lag(steer: np.ndarray, yaw_rate: np.ndarray, rate: float, max_lag_
 
 
 def _per_corner(speed: np.ndarray, lat_g: np.ndarray, front_sa: np.ndarray,
-                rear_sa: np.ndarray, moving: np.ndarray, rate: float, top_n: int = 5) -> dict | None:
+                rear_sa: np.ndarray, moving: np.ndarray, rate: float,
+                corner_lat: float, top_n: int = 5) -> dict | None:
     """Per-individual-corner balance (not just the per-phase lap aggregate).
 
-    Splits the lap into discrete corners (contiguous |latG| > threshold runs) and
-    reports the worst by understeer/oversteer so a SPECIFIC corner can be targeted.
+    Splits the lap into discrete corners (contiguous |latG| > ``corner_lat`` runs, the
+    session's own data-derived cornering onset) and reports the worst by
+    understeer/oversteer so a SPECIFIC corner can be targeted.
     """
-    corner = moving & (np.abs(lat_g) > CORNER_LAT_G)
+    corner = moving & (np.abs(lat_g) > corner_lat)
     idx = np.where(corner)[0]
     if idx.size < 50:
         return None
@@ -231,10 +268,57 @@ def _phase_stats(
     }
 
 
+def _banded(
+    mask: np.ndarray,
+    *,
+    key: np.ndarray,
+    key_name: str,
+    front_sa: np.ndarray,
+    rear_sa: np.ndarray,
+    front_cs: np.ndarray,
+    rear_cs: np.ndarray,
+    lat_g: np.ndarray,
+) -> dict:
+    """Balance + grip split into DATA-DERIVED thirds of the session's own ``key``
+    distribution (corner speed / lateral load / tyre temperature) within ``mask``.
+
+    Grip/balance are load-, speed- and temperature-dependent, so a per-phase mean
+    blends states that exist at no real instant. The band EDGES are the terciles of
+    THIS lap's own distribution — no fixed cutoffs — so the split adapts to the
+    actual track and car; conditioning on the axis a lever acts through
+    (aero→speed, load-sensitivity→lateral g, grip→temperature) makes it attributable.
+    """
+    k = key[mask]
+    if k.size < 3 * MIN_PHASE_FRAMES:
+        return {"note": f"too few frames to band by {key_name}"}
+    lo_e, hi_e = (float(x) for x in np.percentile(k, (100.0 / 3, 200.0 / 3)))
+    out: dict = {
+        "band_edges": [round(lo_e, 2), round(hi_e, 2)],
+        "note": f"thirds of this session's {key_name} (data-derived edges, not fixed cutoffs)",
+    }
+    for lo, hi, name in ((-np.inf, lo_e, "low"), (lo_e, hi_e, "mid"), (hi_e, np.inf, "high")):
+        band = mask & (key >= lo) & (key < hi)
+        n = int(band.sum())
+        if n < MIN_PHASE_FRAMES:
+            out[name] = {"frames": n}
+            continue
+        fa, ra = float(front_sa[band].mean()), float(rear_sa[band].mean())
+        out[name] = {
+            "frames": n,
+            f"mean_{key_name}": round(float(key[band].mean()), 2),
+            # >0 = understeer (front sliding more), <0 = oversteer
+            "balance_front_minus_rear": round(fa - ra, 4),
+            "front_combined_slip": round(float(front_cs[band].mean()), 4),
+            "rear_combined_slip": round(float(rear_cs[band].mean()), 4),
+            "mean_abs_lat_g": round(float(np.abs(lat_g[band]).mean()), 3),
+        }
+    return out
+
+
 def _extended_blocks(
     frames: list[dict], *, moving: np.ndarray, lat_g: np.ndarray, long_g: np.ndarray,
     throttle: np.ndarray, brake: np.ndarray, speed: np.ndarray, rpm: np.ndarray,
-    maxrpm: np.ndarray, gear: np.ndarray,
+    maxrpm: np.ndarray, gear: np.ndarray, lat_thr: float, thr_thr: float,
 ) -> dict:
     """Consume every remaining telemetry channel into a useful signal.
 
@@ -245,10 +329,13 @@ def _extended_blocks(
     lap timing, the AI reference line, and track geometry.
     """
     wheels = ("fl", "fr", "rl", "rr")
-    cornering = moving & (np.abs(lat_g) > CORNER_LAT_G)
-    on_thr = throttle > 0.5
-    wot = (throttle > 0.9) & moving  # moving-gated so standstill power spikes don't count
-    fast = moving & (speed > 10 / 2.237)  # >10 mph
+    cornering = moving & (np.abs(lat_g) > lat_thr)   # session-derived cornering cut
+    on_thr = throttle > thr_thr                      # session-derived on-throttle cut
+    # WOT = near the session's OWN max throttle; "fast" = upper-speed frames by the
+    # moving-speed distribution — both data-relative, no absolute cutoff.
+    tmax = float(np.nanmax(throttle)) if throttle.size else 1.0
+    wot = (throttle > 0.9 * tmax) & moving
+    fast = moving & (speed > float(np.percentile(speed[moving], 40))) if int(moving.sum()) else moving
 
     # --- Chassis attitude: roll/pitch and their rates, heading ---
     pitch, roll, yaw = _col(frames, "pitch"), _col(frames, "roll"), _col(frames, "yaw")
@@ -488,17 +575,38 @@ def segment_session(frames: list[dict]) -> dict:
     maxrpm = _col(frames, "engine_max_rpm")
     gear = _col(frames, "gear")
     yaw_rate = _col(frames, "angular_velocity_y")
-    front_nt = (_col(frames, "norm_suspension_fl") + _col(frames, "norm_suspension_fr")) / 2
-    rear_nt = (_col(frames, "norm_suspension_rl") + _col(frames, "norm_suspension_rr")) / 2
 
     race_on = _col(frames, "is_race_on")
-    moving = (speed > MOVING_MPS) & (race_on > 0)
+    # Frame-state classifiers, DERIVED per session (no fixed cutoffs). The game's own
+    # is_race_on flag gates active driving — the most data-driven "moving" signal there
+    # is (Otsu on SPEED is wrong: a track's speed trace is bimodal slow-corner/fast-
+    # straight, not stopped/moving, so it would discard the slow corners). Otsu then
+    # splits the |lat_g|/pedal traces at the valley between their off- and on-clusters.
+    # Collisions are excluded from the lateral-g cut so non-physical spikes can't drag it.
+    moving = race_on > 0
     if int(moving.sum()) < 100:
         return {"error": "Car barely moved; nothing to segment."}
 
-    cornering = (np.abs(lat_g) > CORNER_LAT_G) & moving
-    braking = brake > BRAKE_ON
-    on_throttle = throttle > THROTTLE_ON
+    lat_abs = np.abs(lat_g)
+    absteer = np.abs(steer)
+    # Cornering onset = lateral-g clearly above the car's OWN straight-line noise:
+    # take the least-steered third of moving frames as "straight" and set the cut at the
+    # top (90th pct) of THEIR |lat_g|. Data-derived, and it stays low enough to keep
+    # gentle corners and turn-in — where light-load rotation lives — unlike an Otsu
+    # class-valley, which a straight-dominated histogram pushes mid-corner (throwing the
+    # light cornering, and its findings, away).
+    steer_cut = float(np.percentile(absteer[moving], 33.0))
+    straight_lat = lat_abs[moving & (absteer <= steer_cut)]
+    corner_lat = float(np.percentile(straight_lat, 90.0)) if straight_lat.size \
+        else float(np.percentile(lat_abs[moving], 25.0))
+    thr_thr = _otsu(throttle[moving])                    # on-throttle vs off (pedals ARE bimodal)
+    brk_thr = _otsu(brake[moving])                       # braking vs not
+    # A LOADED gate (Otsu of |lat_g|, collisions excluded) only for load-normalized
+    # chassis metrics in _extended_blocks, where dividing by tiny lat_g would blow up.
+    load_gate = _otsu(lat_abs[moving & (lat_abs < 4.0)])
+    cornering = moving & (lat_abs > corner_lat)
+    braking = brake > brk_thr
+    on_throttle = throttle > thr_thr
 
     # Mutually-exclusive cornering phases (entry takes priority over exit/apex).
     entry = cornering & braking                      # trail-brake / turn-in
@@ -524,7 +632,7 @@ def segment_session(frames: list[dict]) -> dict:
     rate = _sample_rate_hz(frames)
     dur_min = n_move / rate / 60.0
 
-    coasting = moving & (throttle < COAST_PEDAL) & (brake < COAST_PEDAL)
+    coasting = moving & (throttle < thr_thr) & (brake < brk_thr)
     n_brake = int((braking & moving).sum())
     n_exit = int(exit_.sum())
 
@@ -558,11 +666,20 @@ def segment_session(frames: list[dict]) -> dict:
     extended = _extended_blocks(
         frames, moving=moving, lat_g=lat_g, long_g=long_g, throttle=throttle,
         brake=brake, speed=speed, rpm=rpm, maxrpm=maxrpm, gear=gear,
+        lat_thr=load_gate, thr_thr=thr_thr,
     )
     return {
         "sample_rate_hz": round(rate, 1),
         "moving_minutes": round(dur_min, 2),
         "race_on_pct": round(float(np.mean(race_on > 0)), 3),
+        "derived_thresholds": {
+            "moving": "is_race_on (game flag)",
+            "cornering_lat_g": round(corner_lat, 3),
+            "on_throttle_frac": round(thr_thr, 3),
+            "braking_frac": round(brk_thr, 3),
+            "load_gate_lat_g": round(load_gate, 3),
+            "note": "derived per session from the data (cornering = above straight-line noise; pedals = Otsu), not fixed cutoffs",
+        },
         "phase_time_pct": {
             "straight": round(int(straight.sum()) / n_move, 3),
             "corner_entry": round(int(entry.sum()) / n_move, 3),
@@ -585,8 +702,32 @@ def segment_session(frames: list[dict]) -> dict:
         "gearing": _gearing_stats(rpm, maxrpm, gear, speed * 2.237, throttle),
         "driver": driver,
         "impacts": impacts,
-        "damper_histogram": _damper_histogram(front_nt, rear_nt, moving, rate),
+        "damper_histogram": _damper_histogram(
+            {w: _col(frames, f"suspension_travel_{w}") for w in ("fl", "fr", "rl", "rr")},
+            moving, rate,
+        ),
         "response": _response_lag(steer, yaw_rate, rate),
-        "worst_corners": _per_corner(speed, lat_g, front_sa, rear_sa, moving, rate),
+        "worst_corners": _per_corner(speed, lat_g, front_sa, rear_sa, moving, rate, corner_lat),
+        # Balance/grip split by operating point (speed / lateral load / tyre temp)
+        # so speed-, load- and temperature-dependent levers are judged on the axis
+        # they actually act through, not a blended per-phase mean.
+        "apex_by_speed_band": _banded(
+            apex, key=speed * 2.237, key_name="mph",
+            front_sa=front_sa, rear_sa=rear_sa, front_cs=front_cs, rear_cs=rear_cs, lat_g=lat_g,
+        ),
+        "cornering_by_speed_band": _banded(
+            cornering, key=speed * 2.237, key_name="mph",
+            front_sa=front_sa, rear_sa=rear_sa, front_cs=front_cs, rear_cs=rear_cs, lat_g=lat_g,
+        ),
+        "cornering_by_load_band": _banded(
+            cornering, key=np.abs(lat_g), key_name="latg",
+            front_sa=front_sa, rear_sa=rear_sa, front_cs=front_cs, rear_cs=rear_cs, lat_g=lat_g,
+        ),
+        "cornering_by_temp_band": _banded(
+            cornering,
+            key=((_col(frames, "tire_temp_fl") + _col(frames, "tire_temp_fr")) / 2 - 32) * 5 / 9,
+            key_name="tempc",
+            front_sa=front_sa, rear_sa=rear_sa, front_cs=front_cs, rear_cs=rear_cs, lat_g=lat_g,
+        ),
         **extended,
     }

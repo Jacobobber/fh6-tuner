@@ -1,0 +1,20 @@
+{
+  "schema": "fh6-setup/v1",
+  "source": "forza_capture (read-only) + in-game upgrade screen, 2026-07; CURRENT tune (camber -2.0 / aero 560-526)",
+  "car": {"name": "2016 Aston Martin Vulcan", "ordinal": 2470, "pi": 900, "class": "S2", "drivetrain": "RWD", "cylinders": 12},
+  "weight": {"total_lb": 2716, "front_pct": 0.47, "note": "from in-game upgrade screen / OCR"},
+  "build": {
+    "transmission": "Stock (race-derived sequential, ratios tunable)",
+    "differential": "Stock LSD (accel/decel lock tunable)",
+    "tires_compound": "unknown (not drilled)",
+    "aero_front": "adjustable wing installed",
+    "aero_rear": "adjustable wing installed"
+  },
+  "tune": {
+    "tire_press_f": 30, "tire_press_r": 29, "final_drive": 3.00,
+    "camber_f": -2.0, "camber_r": -1.8, "toe_f": 0.1, "toe_r": -0.1, "caster": 6.5,
+    "arb_f": 25.6, "arb_r": 51.5, "spring_f": 770.6, "spring_r": 727.5, "rh_f": 2.4, "rh_r": 3.1,
+    "reb_f": 12.4, "reb_r": 11.1, "bump_f": 8.3, "bump_r": 7.4,
+    "aero_f": 560, "aero_r": 526, "brake_bal": 50, "brake_press": 100, "diff_accel": 60, "diff_decel": 2
+  }
+}
