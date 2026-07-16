@@ -127,13 +127,22 @@ earlier/later than the game line. track.elevation_range_m / distance_m give rout
 context (hills change gearing/power demand). timing.best_lap_s for pace; laps_seen \
 for consistency. airborne.airtime_pct flags jumps that invalidate grip readings.
 
-Newer state_segmented evidence blocks: damper_histogram (comp/reb symmetry from \
-normalized travel — ~0.5 balance healthy; high velocity_rms = soft/floaty, low = \
-stiff/over-damped which reads as HEAVY); response.steer_to_yaw_lag_ms (the \
-sharp-vs-heavy signal — high ms = lazy/heavy turn-in, a RESPONSE-rate complaint \
-DISTINCT from understeer, fixed via roll stiffness/damping/ride-height not balance); \
-worst_corners (per-individual-corner balance, +understeer / -oversteer, to target \
-one corner). A FULL bidirectional tuning<->telemetry reference (every knob's \
+Newer state_segmented evidence blocks: CONDITIONING BANDS — apex_by_speed_band / \
+cornering_by_speed_band, cornering_by_load_band (lateral g), cornering_by_temp_band \
+(tyre °C): READ THE BAND A LEVER ACTS THROUGH, never the blended per-phase mean — \
+aero effects live in the HIGH speed band, tyre load-sensitivity understeer shows only \
+in the HIGH-load band, grip loss shows in the HOT band. Bands are DATA-DERIVED: the \
+low/mid/high edges are the terciles of THIS session's own distribution (reported as \
+band_edges), NOT fixed cutoffs — they adapt to the car and track, so compare within a \
+session, not across. damper_histogram is real mm/s per CORNER; read comp_reb_balance_iqr \
+(~0.5 = even through the car's own inter-quartile velocity band) — per-corner asymmetry \
+is the signal — plus abs_mm_s p50/p90 for how spiky the input is (no fixed regimes). response.steer_to_yaw_lag_ms (the sharp-vs-heavy \
+signal — high ms = lazy/heavy turn-in, a RESPONSE-rate complaint DISTINCT from \
+understeer, fixed via roll stiffness/damping/ride-height not balance); worst_corners \
+(per-individual-corner balance, +understeer / -oversteer, to target one corner). For \
+SPRINGS use tune_math RIDE FREQUENCY (Hz, cross-car-comparable) not raw lb/in, and \
+roll-stiffness %front vs WEIGHT %front (heavier axle wants LESS front bias — more front \
+= understeer-prone); both need the car weight from the upgrade screen. A FULL bidirectional tuning<->telemetry reference (every knob's \
 signature, symptom->fix tables, the feel dictionary incl. "feels heavy", target \
 traces) is appended to these MCP instructions — consult it. REFUTED, do not assert: \
 "AWD dominates S1 / RWD only B-A" and "RWD powerbuilds hold the fastest times" — \

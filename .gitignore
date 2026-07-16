@@ -32,3 +32,7 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# local empirical tune-response model data (personal, session-derived)
+data/*
+!data/.gitkeep
