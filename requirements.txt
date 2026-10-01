@@ -1,4 +1,4 @@
 rich
 click
 numpy
-mcp
+mcp>=1.9,<2  # mcp_server.py uses FastMCP, removed in mcp 2.x
