@@ -10,7 +10,7 @@ from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
 
-from tuner.summary import summarize_session, TUNING_GUIDANCE, GOALS
+from tuner.summary import summarize_session as _summarize_session, TUNING_GUIDANCE, GOALS
 from tuner.analyzer import compute_recommendations
 from tuner.build import compute_build_signals, BUILD_GUIDANCE
 from tuner.coach import compute_coaching_stats, COACHING_GUIDANCE
@@ -87,7 +87,7 @@ def summarize_session(session_name: str, goal: str = "balanced") -> dict:
     """
     if goal not in GOALS:
         raise ValueError(f"Unknown goal '{goal}'. Choose one of: {', '.join(GOALS)}.")
-    return summarize_session(_session_path(session_name), goal=goal)
+    return _summarize_session(_session_path(session_name), goal=goal)
 
 
 @mcp.tool()

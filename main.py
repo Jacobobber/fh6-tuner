@@ -115,6 +115,7 @@ def read(session: str, weight: float | None, front_pct: float | None) -> None:
     chassis — and save it to dist/read_SESSION.md."""
     from tuner.readout import read_session
 
+    session = Path(session).name  # accept "sessions/<name>" like analyze does
     report = read_session(session, weight_lb=weight, front_weight_pct=front_pct)
     console.print(report)
     dist = Path("dist")
